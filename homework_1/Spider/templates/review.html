@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Show script bug</title>
+</head>
+<body>
+    {% for item in res %}
+    <h2>用户名：{{item[1]}}</h2>
+    <br />
+    <h3>评论内容：{{item[3]}}</h3>
+    <br />
+    <h5>评论时间：{{item[4]}}</h5>
+    <br />
+    <br />
+    {% endfor %}
+    <form action="" method="get">
+        <input type="text" name="script" id="script">
+        <input type="submit" id="submit" value="确定">
+    </form>
+    <a href="{{ script }}" id="click">发表评论</a>
+    <br />
+    <a href="http://127.0.0.1:5000/commodities">回到商品列表</a>
+</body>
+</html>

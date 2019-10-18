@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Commodities</title>
+</head>
+<body>
+    <h1>商品列表</h1>
+    {% for item in res %}
+    <h3>商品名称：</h3>{{item[1]}}<br />
+    <a id="{{item[0]}}" href="http://127.0.0.1:5000/{{item[0]}}/reviews">评论</a>
+    {% endfor %}
+    <br />
+    <br />
+    <a href="http://127.0.0.1:5000/">退出登录</a>
+</body>
+</html>
