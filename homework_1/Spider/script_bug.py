@@ -8,7 +8,7 @@ def login():
         username = request.args.get('username')
         password = request.args.get('password')
 
-        db = pymysql.connect('localhost', 'root', '584034912', 'NetShop')
+        db = pymysql.connect('localhost', 'root', '你的数据库密码', 'NetShop')
         cursor = db.cursor()
         try:
             sql = "select password from user where name ='%s'" % username
