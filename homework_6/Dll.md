@@ -124,12 +124,6 @@
 
 ## 二. 三个任务
 
-### 1. 会编写dll。把.c文件编译obj文件，把obj文件和lib文件链接为新的dll和lib文件。注意使用def文件定义导出函数。
-
-### 2. 编写一个exe,调用第一步生成的dll文件中的导出函数。方法是（1）Link是，将第一步生成的lib文件作为输入文件。（2）保证dll文件和exe文件在同一目录，或者dll 文件在系统目录
-
-### 3. 第二步调用方式称为load time 特点是exe文件导入表中会出先需要调用的dll文件及函数名，并且link生成exe时，需明确输入lib文件。还有一种调用方式称为run time，参考链接，使用run time的方式，调用dll的导出函数。包括系统API和第一步自行生成的dll，都要能成功调用。
-
 提示：
 
 link /dll /def:xxx.def
@@ -139,3 +133,131 @@ link xxx.lib /out:app.exe
 dumpbin /imports xxx.exe
 
 dumpbin /exports xxx.dll
+
+### 1. 会编写dll。把.c文件编译obj文件，把obj文件和lib文件链接为新的dll和lib文件。注意使用def文件定义导出函数。
+
+为什么要写dll？为了方便不开源共享
+
+* 编写dll
+
+创建空工程baseLib，创建源文件base.c，
+
+~~~c
+#include<Windows.h>
+
+int internal_function() {
+	return 0;
+}
+
+int lib_function(char *msg)
+{
+	// do some works
+	MessageBox(0, 
+		"msg from base lib",
+		msg,
+		MB_OK);
+	return 0;
+}
+~~~
+
+头文件baseLib.h
+
+~~~h
+#pragma once
+int lib_function(char* msg);
+~~~
+
+在源文件中新建项，直接把文件名改为exp.def（*.def为模块定义文件），点击确定
+
+~~~def
+LIBRARY   baseLib
+EXPORTS
+    lib_function
+;这里只包含了方法lib_function，没有internal_function
+~~~
+
+模块定义文件模版
+
+~~~def
+LIBRARY   BTREE
+EXPORTS
+;@表示顺序
+   Insert   @1
+   Delete   @2
+   Member   @3
+   Min   @4
+~~~
+
+配置：
+
+配置属性->常规->配置类型改为 动态库.dll
+
+链接器->输入->模块定义文件中填写exp.def
+
+重新生成
+
+* 把.c文件编译obj文件，把obj文件和lib文件链接为新的dll和lib文件
+
+打开 工具->VS2017开发人员命令提示符
+
+cd到baseLib目录下，
+
+**注意：可以根据时间来判断是否为新生成文件**
+
+~~~shell
+# 将base.c编译为base.obj
+cl.exe /c base.c
+# 将base.obj和User32.lib（因为lib_function中调用了User32.lib中的MessageBox函数）链接为base.lib和baseLib.dll，base.exp（包含了导出函数和数据项的信息）
+link base.obj User32.lib /dll /def:exp.def
+~~~
+
+### 2. 编写一个exe,调用第一步生成的dll文件中的导出函数。
+
+方法是
+
+（1）Link是，将第一步生成的lib文件作为输入文件。
+
+（2）保证dll文件和exe文件在同一目录，或者dll 文件在系统目录
+
+新建项目app
+
+编写源文件app.c
+
+~~~c
+int main() {
+	lib_function("call a dll");
+	return 0;
+}
+~~~
+
+打开 工具->VS2017开发人员命令提示符
+
+cd到app目录下
+
+~~~shell
+#编译app.c为app.obj
+cl.exe /c app.c
+#将base.lib复制到app项目目录下
+copy ..\baseLib\base.lib
+#链接app.obj和base.lib为app.exe
+link app.obj base.lib /out:app.exe
+#将dll复制到app项目目录下
+copy ..\baseLib\baseLib.dll
+#运行
+app.exe
+~~~
+
+项目中运行的办法：
+
+右键项目打开属性->在VC++包含目录中点编辑->新行->选择baseLib文件夹（它是包含baseLib.h的文件夹，这么做是为了在app.c中可以用尖括号include baseLib.h）
+
+在链接器->输入->附加依赖项中点编辑->写入目录..\baseLib\base.lib
+
+然后在app.c中写入（其实不写也可以运行，根据上述命令行操作可知，链接时需要base.lib，所以只配置base.lib完全是可以正常运行的）
+
+~~~c
+#include <baseLib.h>
+~~~
+
+### 3. 第二步调用方式称为load time 特点是exe文件导入表中会出先需要调用的dll文件及函数名，并且link生成exe时，需明确输入lib文件。还有一种调用方式称为run time，参考链接，使用run time的方式，调用dll的导出函数。包括系统API和第一步自行生成的dll，都要能成功调用。
+
