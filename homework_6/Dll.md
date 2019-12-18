@@ -261,3 +261,48 @@ app.exe
 
 ### 3. 第二步调用方式称为load time 特点是exe文件导入表中会出先需要调用的dll文件及函数名，并且link生成exe时，需明确输入lib文件。还有一种调用方式称为run time，参考链接，使用run time的方式，调用dll的导出函数。包括系统API和第一步自行生成的dll，都要能成功调用。
 
+[参考链接](https://docs.microsoft.com/zh-cn/windows/win32/dlls/using-run-time-dynamic-linking)
+
+新建工程RunTimeApp，创建rapp.c
+
+~~~c
+#include <windows.h> 
+#include <stdio.h> 
+
+typedef int(__cdecl *MYPROC)(LPWSTR);
+
+int main() {
+	HINSTANCE hinstLib;
+	MYPROC ProcAdd;
+	BOOL fFreeResult, fRunTimeLinkSuccess = FALSE;
+
+	// Get a handle to the DLL module.
+
+	hinstLib = LoadLibrary(TEXT("baseLib.dll"));
+
+	// If the handle is valid, try to get the function address.
+
+	if (hinstLib != NULL)
+	{
+		ProcAdd = (MYPROC)GetProcAddress(hinstLib, "lib_function");
+
+		// If the function address is valid, call the function.
+
+		if (NULL != ProcAdd)
+		{
+			fRunTimeLinkSuccess = TRUE;
+			(ProcAdd)("call a dll");//这里传入函数lib_function的参数
+		}
+		// Free the DLL module.
+
+		fFreeResult = FreeLibrary(hinstLib);
+	}
+
+	// If unable to call the DLL function, use an alternative.
+	if (!fRunTimeLinkSuccess)
+		printf("Message printed from executable\n");
+	return 0;
+}
+~~~
+
+![5](img/5.png)
