@@ -261,3 +261,40 @@ int main() {
 
 ## 3、整合进程遍历的程序，使得攻击程序可以自己遍历进程得到目标程序的pid。
 
+~~~c
+//根据进程名得到pid
+DWORD findPidByName(char * pname)
+{
+	HANDLE h;
+	PROCESSENTRY32 procSnapshot;
+	h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	procSnapshot.dwSize = sizeof(PROCESSENTRY32);
+
+	if (!Process32First(h, &procSnapshot)) {
+		printError(TEXT("Process32First")); // show cause of failure
+		CloseHandle(h);          // clean the snapshot object
+		return(FALSE);
+	}
+
+	do
+	{
+		char s[1000];
+		strcpy(s, (char*)procSnapshot.szExeFile);
+		//printf("%s id:%d return:%d\n", s, procSnapshot.th32ProcessID, strcmp(s, pname));
+		if (!strcmp(s, pname))
+		{
+			DWORD pid = procSnapshot.th32ProcessID;
+			CloseHandle(h);
+#ifdef _DEBUG
+			printf("[+] PID found: %ld\n", pid);
+#endif
+			return pid;
+		}
+	} while (Process32Next(h, &procSnapshot));
+
+	CloseHandle(h);
+	return 0;
+}
+~~~
+
+运行及结果在问题2
