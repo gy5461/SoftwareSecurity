@@ -13,7 +13,7 @@ h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 procSnapshot.dwSize = sizeof(PROCESSENTRY32);
 
 if (!Process32First(h, &procSnapshot)) {
-    printError(TEXT("Process32First")); // show cause of failure
+    puts("Process32First Error"); // show cause of failure
     CloseHandle(h);          // clean the snapshot object
     return(FALSE);
 }
@@ -154,7 +154,7 @@ DWORD findPidByName(char * pname)
 	procSnapshot.dwSize = sizeof(PROCESSENTRY32);
 
 	if (!Process32First(h, &procSnapshot)) {
-		printError(TEXT("Process32First")); // show cause of failure
+		puts("Process32First Error"); // show cause of failure
 		CloseHandle(h);          // clean the snapshot object
 		return(FALSE);
 	}
@@ -271,7 +271,7 @@ DWORD findPidByName(char * pname)
 	procSnapshot.dwSize = sizeof(PROCESSENTRY32);
 
 	if (!Process32First(h, &procSnapshot)) {
-		printError(TEXT("Process32First")); // show cause of failure
+		puts("Process32First Error"); // show cause of failure
 		CloseHandle(h);          // clean the snapshot object
 		return(FALSE);
 	}
